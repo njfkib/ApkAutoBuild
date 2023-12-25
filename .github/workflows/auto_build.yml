@@ -19,9 +19,6 @@ jobs:
           - userName: muxd93
             repoName: TVBoxOS_XD
             branchName: main
-          - userName: muxd93
-            repoName: TVBox_takagen99
-            branchName: main
           - userName: q215613905
             repoName: TVBoxOS
             branchName: main
@@ -30,6 +27,12 @@ jobs:
             branchName: main
           - userName: XiaoRanLiu3119
             repoName: TVBoxOS-Mobile
+            branchName: main
+          - userName: chengxue2020
+            repoName: q215613905-Tbox
+            branchName: main
+          - userName: xisohi
+            repoName: XHYSTV
             branchName: main
           - userName: gedoor
             repoName: legado
@@ -53,19 +56,19 @@ jobs:
       - name: Checkout Source Code and Zip
         if: ${{ env.commit }}
         run: |
-          git clone ${{ env.upStream }} TVBoxOSC
-          cd TVBoxOSC
+          git clone ${{ env.upStream }} Apk_Build_${{ matrix.repoName }}
+          cd Apk_Build_${{ matrix.repoName }}
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
       - name: Compress Source Code
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
 
       - name: Release Apk Sign
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
@@ -82,33 +85,23 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
-
-#      - name: Build Debug With Gradle
-#        if: ${{ env.commit }}
-#        working-directory: TVBoxOSC
-#        run: |
-#          chmod +x gradlew
-#          ./gradlew assembleDebug --build-cache --parallel --daemon --warning-mode all
-
       - name: Prepare App
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           rm -rf apk/
           mkdir -p apk/
           for file in `find ~ -name "*release*.apk" -print`; do
-            mv "$file" apk/TVBox_${{ matrix.userName }}_${{ env.tag }}_Release.apk
-          done
-          for file in `find ~ -name "*debug*.apk" -print`; do
-            mv "$file" apk/TVBox_${{ matrix.userName }}_${{ env.tag }}_Debug.apk
+            echo "file name is $file"
+            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
           done
       - name: Release Note
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
@@ -118,35 +111,28 @@ jobs:
           else
             git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
           fi
-      - name: Upload App To Artifact
-        uses: actions/upload-artifact@v3
-        if: ${{ env.commit }}
-        with:
-          name: TVBox_${{ matrix.userName }}_Release_and_Debug
-          path: TVBoxOSC/apk/*
-
       - name: Release and Upload Assets(release area)
         uses: softprops/action-gh-release@v1
         if: ${{ env.commit }}
         with:
           name: ${{ env.tag }}
           tag_name: ${{ env.tag }}
-          body_path: TVBoxOSC/apk/${{ matrix.userName }}-Release.log
+          body_path: Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log
           files: |
-            TVBoxOSC/apk/*
-            TVBoxOSC/source-${{ env.commitS }}.zip
+            Apk_Build_${{ matrix.repoName }}/apk/*
+            Apk_Build_${{ matrix.repoName }}/source-${{ env.commitS }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to master
         if: ${{ env.commit }}
         run: |
-          rm -rf TVBoxOSC
+          rm -rf Apk_Build_${{ matrix.repoName }}
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
-          git add --all
-          git commit -m "${{ env.commit }}"
+          git add *.apk
+          git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
           git push -u -f origin main

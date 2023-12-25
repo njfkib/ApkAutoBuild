@@ -14,3 +14,5 @@ This repo relies on the following third-party projects:
 - [muxd93/TVBox_takagen99](https://github.com/muxd93/TVBox_takagen99) (Updated: a7922cd9a712c4e37b99fa480506070115ca86c8)
 - [XiaoRanLiu3119/TVBoxOS-Mobile](https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile) (Updated: 89824aa4be39cc71239a0dd1102419c0c340c8b4)
 - [gedoor/legado](https://github.com/gedoor/legado) (Updated: 8df1cb8ab68e06762d7db9da7df430f09a4afb20)
+- [xisohi/XHYSTV](https://github.com/xisohi/XHYSTV) (Updated: a545c27b99b6d6d9e54196b8a0adcf3b56a97ddf)
+- [chengxue2020/q215613905-Tbox](https://github.com/chengxue2020/q215613905-Tbox) (Updated: a545c27b99b6d6d9e54196b8a0adcf3b56a97ddf)

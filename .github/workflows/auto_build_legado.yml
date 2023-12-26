@@ -125,11 +125,10 @@ jobs:
             mv "$file" apk/legado_${{ env.product }}_${{ env.VERSIONL }}_$typeName.apk
           done
       - name: Upload App To Artifact
-        working-directory: Apk_Build_${{ matrix.repoName }}
         uses: actions/upload-artifact@v3
         with:
           name: legado.${{ env.product }}.${{ env.type }}
-          path: apk/*.apk
+          path: Apk_Build_${{ matrix.repoName }}/apk/*.apk
 
       - name: Release Note
         if: ${{ env.product == 'app' }}

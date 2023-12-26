@@ -1,4 +1,4 @@
-name: Legado Release Build
+name: Legado Test Build
 
 on:
   schedule:
@@ -30,10 +30,9 @@ jobs:
 
   build:
     needs: prepare
-    if: ${{ needs.prepare.outputs.sign }}
     strategy:
       matrix:
-        product: [ app, google ]
+        product: [ app ]
         type: [ release, releaseA ]
         userName: [ gedoor ]
         repoName: [ legado ]

@@ -89,6 +89,9 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
+          if [ "${{ matrix.repoName }}" == "lx-music-mobile" ]; then
+            cd android
+          fi
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App

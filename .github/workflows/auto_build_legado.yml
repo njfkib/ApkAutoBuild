@@ -35,7 +35,7 @@ jobs:
       matrix:
         product: [ app, google ]
         type: [ release, releaseA ]
-	userName: [ gedoor ]
+        userName: [ gedoor ]
         repoName: [ legado ]
         branchName: [ master ]
       fail-fast: false

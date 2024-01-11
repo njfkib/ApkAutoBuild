@@ -9,7 +9,7 @@ This repo relies on the following third-party projects:
 - [o0HalfLife0o/TVBoxOSC](https://github.com/o0HalfLife0o/TVBoxOSC/releases)
 - [q215613905/TVBoxOS](https://github.com/q215613905/TVBoxOS) (Updated: a545c27b99b6d6d9e54196b8a0adcf3b56a97ddf)
 - [takagen99/Box](https://github.com/takagen99/Box) (Updated: 02cd76e832dc6ccc97c5ef9d47a88f1492cb2419)
-- [FongMi/TV](https://github.com/FongMi/TV) (Updated: 470a7af8599a1615d2ce44c2aae81d77f71f5422)
+- [FongMi/TV](https://github.com/FongMi/TV) (Updated: ada9d52f27fcf2958c80f84b09c344e215bfd16e)
 - [muxd93/TVBoxOS_XD](https://github.com/muxd93/TVBoxOS_XD) (Updated: 0a96822ab394733567ce052ab3a81802027ece43)
 - [muxd93/TVBox_takagen99](https://github.com/muxd93/TVBox_takagen99) (Updated: a7922cd9a712c4e37b99fa480506070115ca86c8)
 - [XiaoRanLiu3119/TVBoxOS-Mobile](https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile) (Updated: 209c33ef1c9ea8b7349056c3aa2fd9e6dd825ba6)

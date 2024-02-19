@@ -156,11 +156,11 @@ jobs:
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
           if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
-              sed -i 's/"buildRepoName": "[^"]*"/"buildRepoName": "${{ github.repository }}"/g' tk_version.json
-              sed -i 's/"repoUserName": "[^"]*"/"repoUserName": "${{ matrix.userName }}"/g' tk_version.json
-              sed -i 's/"repoName": "[^"]*"/"repoName": "${{ matrix.repoName }}"/g' tk_version.json
+              sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' tk_version.json
+              sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' tk_version.json
+              sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' tk_version.json
               desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log`
-              sed -i 's/"repoTag": "[^"]*"/"repoTag": "${desc}"/g' tk_version.json
+              sed -i 's#"repoTag": "[^"]*"#"repoTag": "${desc}"#g' tk_version.json
           fi
           git add --all
           git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"

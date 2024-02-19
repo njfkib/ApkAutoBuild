@@ -85,6 +85,18 @@ jobs:
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
+      - name: Release Note
+        if: ${{ env.commit }}
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
+          export LESSCHARSET=utf-8
+          echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
+          if [ "${{ env.commit }}" == "${lastCommit}" ]; then
+            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          else
+            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          fi
       - name: Setup Gradle
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
@@ -107,18 +119,6 @@ jobs:
             echo "file name is $file"
             mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
           done
-      - name: Release Note
-        if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: |
-          lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
-          export LESSCHARSET=utf-8
-          echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
-          if [ "${{ env.commit }}" == "${lastCommit}" ]; then
-            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
-          else
-            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
-          fi
       - name: Release and Upload Assets(release area)
         uses: softprops/action-gh-release@v1
         if: ${{ env.commit }}
@@ -141,6 +141,13 @@ jobs:
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
+          if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
+              sed -i 's/"buildRepoName": "[^"]*"/"buildRepoName": "${{ github.repository }}"/g' tk_version.json
+              sed -i 's/"repoUserName": "[^"]*"/"repoUserName": "${{ matrix.userName }}"/g' tk_version.json
+              sed -i 's/"repoName": "[^"]*"/"repoName": "${{ matrix.repoName }}"/g' tk_version.json
+              desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log`
+              sed -i 's/"repoTag": "[^"]*"/"repoTag": "${desc}"/g' tk_version.json
+          fi
           git add --all
           git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
           git push -u -f origin main

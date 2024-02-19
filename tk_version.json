@@ -3,8 +3,8 @@
   "versionName": "0.0.0",
   "desc": "1. 测试\n2. 测试",
   "forcedUpgrade": false,
-  "buildRepoName": "ApkAutoBuild",
+  "buildRepoName": "muxd93/ApkAutoBuild",
   "repoUserName": "muxd93",
   "repoName": "TVBox_takagen99",
-  "repoTag": "20240218-2254"
+  "repoTag": "${desc}"
 }

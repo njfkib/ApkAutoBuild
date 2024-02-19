@@ -158,8 +158,12 @@ jobs:
               sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' tk_version.json
               sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' tk_version.json
               sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' tk_version.json
-              desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log`
-              sed -i 's#"repoTag": "[^"]*"#"repoTag": "${desc}"#g' tk_version.json
+              sed -i 's#"repoTag": "[^"]*"#"repoTag": "${{ matrix.repoName }}"#g' tk_version.json
+              if [ -f "Apk_Build_${{ matrix.repoName }}/apk/${{ env.tag }}-Release.log" ]; then
+                  desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ env.tag }}-Release.log`
+                  echo "desc is $desc"
+                  sed -i 's#"desc": "[^"]*"#"desc": "$desc"#g' tk_version.json
+              fi
           fi
           rm -rf Apk_Build_${{ matrix.repoName }}
           git add --all

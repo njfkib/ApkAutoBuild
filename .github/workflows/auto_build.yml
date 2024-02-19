@@ -148,7 +148,6 @@ jobs:
       - name: Push to master
         if: ${{ env.commit }}
         run: |
-          rm -rf Apk_Build_${{ matrix.repoName }}
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -162,6 +161,7 @@ jobs:
               desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log`
               sed -i 's#"repoTag": "[^"]*"#"repoTag": "${desc}"#g' tk_version.json
           fi
+          rm -rf Apk_Build_${{ matrix.repoName }}
           git add --all
           git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
           git push -u -f origin main

@@ -89,6 +89,8 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
+          rm -rf apk/
+          mkdir -p apk/
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
           echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
@@ -119,6 +121,18 @@ jobs:
             echo "file name is $file"
             mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
           done
+      - name: Release Note
+        if: ${{ env.commit }}
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
+          export LESSCHARSET=utf-8
+          echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
+          if [ "${{ env.commit }}" == "${lastCommit}" ]; then
+            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          else
+            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          fi
       - name: Release and Upload Assets(release area)
         uses: softprops/action-gh-release@v1
         if: ${{ env.commit }}

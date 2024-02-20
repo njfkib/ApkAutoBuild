@@ -34,9 +34,6 @@ jobs:
           - userName: FongMi
             repoName: TV
             branchName: release
-          - userName: lyswhut
-            repoName: lx-music-mobile
-            branchName: beta
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,17 +71,17 @@ jobs:
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
           signingConfigs="$(echo "$signingConfigs" |base64 -d )"
           signingConfig="$(echo "$signingConfig" |base64 -d )"
-
-          if [ "${{ matrix.repoName }}" == "lx-music-mobile" ]; then
-            cd android
-          fi
-          
           sed -i -e "/defaultConfig {/i\\$signingConfigs " -e "/debug {/a\\$signingConfig " -e "/release {/a\\$signingConfig " app/build.gradle
           cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
           sed -i '$a\RELEASE_STORE_FILE=./TVBoxOSC.jks'     ./gradle.properties
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
+          if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
+            versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
+            echo "$(newVersionCode=$((versionCode + 1)))" >> $GITHUB_ENV
+            sed -i "s/versionCode $versionCode/versionCode $newVersionCode/" app/build.gradle
+          fi
       - name: Release Note
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
@@ -106,9 +103,6 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
-          if [ "${{ matrix.repoName }}" == "lx-music-mobile" ]; then
-            cd android
-          fi
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App
@@ -155,12 +149,13 @@ jobs:
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
           if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
+              sed -i 's#"versionCode": "[^"]*"#"versionCode": "${{ env.newVersionCode }}"#g' tk_version.json
               sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' tk_version.json
               sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' tk_version.json
               sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' tk_version.json
-              sed -i 's#"repoTag": "[^"]*"#"repoTag": "${{ matrix.repoName }}"#g' tk_version.json
-              if [ -f "Apk_Build_${{ matrix.repoName }}/apk/${{ env.tag }}-Release.log" ]; then
-                  desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ env.tag }}-Release.log`
+              sed -i 's#"repoTag": "[^"]*"#"repoTag": "${{ env.tag }}"#g' tk_version.json
+              if [ -f "Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log" ]; then
+                  desc=`cat Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log`
                   echo "desc is $desc"
                   sed -i 's#"desc": "[^"]*"#"desc": "$desc"#g' tk_version.json
               fi

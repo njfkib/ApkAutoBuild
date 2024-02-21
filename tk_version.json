@@ -1,10 +1,10 @@
 {
   "versionCode": 2,
   "versionName": "0.0.0",
-  "desc": "1. 修复部分问题",
+  "desc": "$desc",
   "forcedUpgrade": false,
   "buildRepoName": "muxd93/ApkAutoBuild",
   "repoUserName": "muxd93",
   "repoName": "TVBox_takagen99",
-  "repoTag": "TVBox_takagen99"
+  "repoTag": "20240221-2020"
 }

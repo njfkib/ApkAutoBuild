@@ -106,7 +106,7 @@ jobs:
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
       - name: Build Common With Gradle
-        if: ${{ env.commit }}
+        if: matrix.repoName == 'TVBox_takagen99'
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew
@@ -114,7 +114,7 @@ jobs:
           releaseAPk=`find ~ -name "*.apk" -print`
           cp "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
       - name: Build Release With Gradle
-        if: ${{ matrix.repoName == "TVBox_takagen99" }}
+        if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew

@@ -100,7 +100,6 @@ jobs:
           fi
           echo "Draft Release Note is \n$releaseNote"
           echo $releaseNote > apk/${{ matrix.userName }}-Release.log
-          echo "releaseNote=$releaseNote" >> $GITHUB_ENV
       - name: Setup Gradle
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
@@ -135,7 +134,11 @@ jobs:
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
           echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
-          echo ${{ env.releaseNote }} >> apk/${{ matrix.userName }}-Release.log
+          if [ "${{ env.commit }}" == "${lastCommit}" ]; then
+            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          else
+            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          fi
       - name: Release and Upload Assets(release area)
         uses: softprops/action-gh-release@v1
         if: ${{ env.commit }}
@@ -163,7 +166,7 @@ jobs:
               sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' tk_version.json
               sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' tk_version.json
               sed -i 's#"repoTag": "[^"]*"#"repoTag": "${{ env.tag }}"#g' tk_version.json
-              sed -i 's#"desc": "[^"]*"#"desc": "${{ env.releaseNote }}"#g' tk_version.json
+              sed -i 's#"desc": "[^"]*"#"desc": "${{ matrix.repoName }}"#g' tk_version.json
           fi
           rm -rf Apk_Build_${{ matrix.repoName }}
           git add --all

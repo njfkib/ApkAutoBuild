@@ -105,27 +105,29 @@ jobs:
       - name: Setup Gradle
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
-      - name: Build Release With Gradle
+      - name: Build Common With Gradle
         if: ${{ env.commit }}
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleCommon --build-cache --parallel --daemon --warning-mode all
+          releaseAPk=`find ~ -name "*.apk" -print`
+          cp "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
+      - name: Build Release With Gradle
+        if: ${{ matrix.repoName == "TVBox_takagen99" }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
-      - name: Build Mobile With Gradle
-        if: ${{ matrix.repoName == "TVBox_takagen99 }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleMobile --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
-          rm -rf apk/
-          mkdir -p apk/
+          i=1
           for file in `find ~ -name "*.apk" -print`; do
-            echo "file name is $file"
-            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
+            echo "i = $i, file name is $file"
+            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release_$i.apk
+            i++
           done
       - name: Release Note
         if: ${{ env.commit }}

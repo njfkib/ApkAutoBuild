@@ -77,14 +77,16 @@ jobs:
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
           sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
-          if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
-            versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
-            newVersionCode=$((versionCode + 1))
-            echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV
-            echo "newVersionCode is ${{ env.newVersionCode }}"
-            echo "versionCode is $versionCode"
-            sed -i "s#versionCode [0-9]*#versionCode $newVersionCode#" app/build.gradle
-          fi
+      - name: Update Version Code
+        if: ${{ env.commit }} && (matrix.repoName == 'TVBox_takagen99')
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
+          newVersionCode=$((versionCode + 1))
+          echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV
+          echo "newVersionCode is ${{ env.newVersionCode }}"
+          echo "lastVersionCode is $versionCode and newVersionCode is $newVersionCode "
+          sed -i "s#versionCode [0-9]*#versionCode $newVersionCode#" app/build.gradle
       - name: Draft Release Note
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
@@ -103,22 +105,24 @@ jobs:
       - name: Setup Gradle
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
-      - name: Build Common With Gradle
-        if: matrix.repoName == 'TVBox_takagen99'
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
-          releaseAPk=`find ~ -name "*.apk" -print`
-          cp "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
       - name: Build Release With Gradle
         if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
+          releaseAPk=`find app/build/outputs/apk/release -name "*.apk" -print`
+          mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_release.apk
+      - name: Build Common With Gradle
+        if: ${{ env.commit }} && (matrix.repoName == 'TVBox_takagen99')
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
+          releaseAPk=`find app/build/outputs/apk/releaseCommon -name "*.apk" -print`
+          mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_releaseCommon.apk
       - name: Prepare App
-        if: ${{ env.commit }}
+        if: ${{ env.commit }} && (matrix.repoName != 'TVBox_takagen99')
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           i=1
@@ -161,7 +165,7 @@ jobs:
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
           if [ "${{ matrix.repoName }}" == "TVBox_takagen99" ]; then
-              sed -i 's#"versionCode": "[^"]*"#"versionCode": "${{ env.newVersionCode }}"#g' tk_version.json
+              sed -i 's#"versionCode": "[0-9]*"#"versionCode": "${{ env.newVersionCode }}"#g' tk_version.json
               sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' tk_version.json
               sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' tk_version.json
               sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' tk_version.json

@@ -128,7 +128,7 @@ jobs:
           releaseAPk=`find app/build/outputs/apk/releaseCommon -name "*.apk" -print`
           mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_releaseCommon.apk
       - name: Prepare App
-        if: matrix.repoName != 'TVBox_takagen99'
+        if: ${{ env.commit }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           i=1

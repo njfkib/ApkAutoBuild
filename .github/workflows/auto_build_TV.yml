@@ -1,4 +1,4 @@
-name: Auto Build
+name: TV Auto Build
 
 on:
   schedule:
@@ -33,7 +33,7 @@ jobs:
             branchName: fongmi
           - userName: FongMi
             repoName: TV
-            branchName: release
+            branchName: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4

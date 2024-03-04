@@ -1,4 +1,4 @@
-name: Auto Build
+name: XD Auto Build
 
 on:
   schedule:

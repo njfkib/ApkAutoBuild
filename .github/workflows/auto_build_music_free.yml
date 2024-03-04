@@ -56,6 +56,7 @@ jobs:
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
       - name: Install Pkgs
         if: ${{ env.commit }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: npm ci
       - name: Get Version
         if: ${{ env.commit }}

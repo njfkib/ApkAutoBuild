@@ -117,16 +117,20 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
-          releaseAPk=`find ~ -name "*.apk" -print`
-          mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_release.apk
       - name: Build Common With Gradle
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
         working-directory: Apk_Build_${{ matrix.repoName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
-          releaseAPk=`find app/build/outputs/apk/releaseCommon -name "*.apk" -print`
-          mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_releaseCommon.apk
+      - name: Prepare App For TVBox_takagen99
+        if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
+        working-directory: Apk_Build_${{ matrix.repoName }}
+        run: |
+          releaseAPk=`find app/build/outputs/apk/release -name "*.apk" -print`
+          mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_release.apk
+          releaseCommonAPk=`find app/build/outputs/apk/releaseCommon -name "*.apk" -print`
+          mv "$releaseCommonAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_releaseCommon.apk
       - name: Prepare App
         if: ${{ env.commit && !(matrix.repoName == 'TVBox_takagen99') }}
         working-directory: Apk_Build_${{ matrix.repoName }}

@@ -2,7 +2,7 @@ name: Auto Build
 
 on:
   schedule:
-    - cron: 0 6 * * *
+    - cron: 0 2 * * *
   push:
     branches:
       - main
@@ -22,18 +22,7 @@ jobs:
           - userName: muxd93
             repoName: TVBox_takagen99
             branchName: main
-          - userName: q215613905
-            repoName: TVBoxOS
-            branchName: main
-          - userName: takagen99
-            repoName: Box
-            branchName: main
-          - userName: XiaoRanLiu3119
-            repoName: TVBoxOS-Mobile
-            branchName: main
-          - userName: FongMi
-            repoName: TV
-            branchName: release
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,19 +42,19 @@ jobs:
       - name: Checkout Source Code and Zip
         if: ${{ env.commit }}
         run: |
-          git clone ${{ env.upStream }} Apk_Build_${{ matrix.repoName }}
-          cd Apk_Build_${{ matrix.repoName }}
+          git clone ${{ env.upStream }} Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+          cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
       - name: Compress Source Code
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
 
       - name: Release Apk Sign
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
@@ -79,7 +68,7 @@ jobs:
           sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
       - name: Update Version Code
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
           newVersionCode=$((versionCode + 1))
@@ -95,7 +84,7 @@ jobs:
           sed -i 's#"desc": "[^"]*"#"desc": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json
       - name: Draft Release Note
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           rm -rf apk/
           mkdir -p apk/
@@ -113,19 +102,19 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
       - name: Build Common With Gradle
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           chmod +x gradlew
           ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App For TVBox_takagen99
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           releaseAPk=`find app/build/outputs/apk/release -name "*.apk" -print`
           mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_release.apk
@@ -133,17 +122,17 @@ jobs:
           mv "$releaseCommonAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_releaseCommon.apk
       - name: Prepare App
         if: ${{ env.commit && !(matrix.repoName == 'TVBox_takagen99') }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           i=1
           for file in `find ~ -name "*.apk" -print`; do
             echo "i = $i, file name is $file"
-            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release_$i.apk
+            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_$i_Release.apk
             i=$((i + 1))
           done
       - name: Release Note
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
@@ -159,10 +148,10 @@ jobs:
         with:
           name: ${{ env.tag }}
           tag_name: ${{ matrix.userName }}_${{ matrix.repoName }}_${{ env.tag }}
-          body_path: Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log
+          body_path: Build_${{ matrix.repoName }}_${{ matrix.branchName }}/apk/${{ matrix.userName }}-Release.log
           files: |
-            Apk_Build_${{ matrix.repoName }}/apk/*
-            Apk_Build_${{ matrix.repoName }}/source-${{ env.commitS }}.zip
+            Build_${{ matrix.repoName }}_${{ matrix.branchName }}/apk/*
+            Build_${{ matrix.repoName }}_${{ matrix.branchName }}/source-${{ env.commitS }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to master
@@ -173,9 +162,11 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git status
+          git stash
           git pull --rebase
+          git stash pop
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
-          rm -rf Apk_Build_${{ matrix.repoName }}
+          rm -rf Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git add --all
           git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
           git push -u -f origin main

@@ -2,7 +2,7 @@ name: MusicFree Release Build
 
 on:
   schedule:
-    - cron: 0 6 * * *
+    - cron: 0 4 * * *
   push:
     branches:
       - main
@@ -10,8 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
-    if: "github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, 'release: ')"
+  build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,18 +18,19 @@ jobs:
         include:
           - userName: maotoumao
             repoName: MusicFree
-            branchName: dev
+            branchName: master
           - userName: maotoumao
             repoName: MusicFree
-            branchName: master
-
+            branchName: dev
     steps:
-      - run: |
-          echo ${{github.event.pull_request.body}}
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Setup Env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
       - name: Check New Commit
         run: |
@@ -45,114 +45,77 @@ jobs:
       - name: Checkout Source Code and Zip
         if: ${{ env.commit }}
         run: |
-          git clone ${{ env.upStream }} Apk_Build_${{ matrix.repoName }}
-          cd Apk_Build_${{ matrix.repoName }}
+          git clone ${{ env.upStream }} Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+          cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
       - name: Compress Source Code
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
-
-      - name: Setup Env
-        uses: actions/setup-node@v3
-        with: 
-          node-version: 16
       - name: Install Pkgs
+        if: ${{ env.commit }}
         run: npm ci
       - name: Get Version
-        run: node -p -e '`VERSION=${require("./package.json").version}`' >> $GITHUB_ENV
-      - name: Build
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: | 
-          cd ./android
-          ./gradlew assembleRelease
-      - name: Generate Changelog
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: echo github.event_name
-      - name: Prepare App
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+        run: node -p -e '`VERSION=${require("./package.json").version}`' >> $GITHUB_ENV
+      - name: Release Apk Sign
+        if: ${{ env.commit }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+        run: |
+          cp -f ${{ github.workspace }}/.github/workflows/legado.jks app/legado.jks
+          sed -i '$a\RELEASE_STORE_FILE=./legado.jks'     ./gradle.properties
+          sed -i '$a\RELEASE_KEY_ALIAS=legado'            ./gradle.properties
+          sed -i '$a\RELEASE_STORE_PASSWORD=gedoor_legado'       ./gradle.properties
+          sed -i '$a\RELEASE_KEY_PASSWORD=gedoor_legado'         ./gradle.properties
+      - name: Customization
+        if: ${{ env.commit && (matrix.repoName == 'legado') }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+        run: |
+          echo "统一版本号"
+          sed "/def version/c def version = \"${{ env.tag }}\"" app/build.gradle  -i
+          echo "清空18PlusList.txt"
+          echo "" > app/src/main/assets/18PlusList.txt
+      - name: Draft Release Note
+        if: ${{ env.commit }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           rm -rf apk/
           mkdir -p apk/
-          for file in `find ~ -name "*release*.apk" -print`; do
-            echo "file name is $file"
-            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
-          done
-      - name: Release Note
-        if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
-          echo -e "Credit: [${{ matrix.userName }}_${{ matrix.repoName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
           if [ "${{ env.commit }}" == "${lastCommit}" ]; then
-            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+            releaseNote=`git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2-`
           else
-            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
+            releaseNote=`git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2-`
           fi
-      - name: Release and Upload Assets(release area)
-        uses: softprops/action-gh-release@v1
+          echo "Draft Release Note is \n$releaseNote"
+          echo $releaseNote > apk/${{ matrix.userName }}-Release.log
+      - name: Setup Gradle
         if: ${{ env.commit }}
-        with:
-          name: ${{ env.tag }}
-          tag_name: ${{ matrix.userName }}_${{ matrix.repoName }}_${{ env.tag }}
-          body_path: Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log
-          files: |
-            Apk_Build_${{ matrix.repoName }}/apk/*
-            Apk_Build_${{ matrix.repoName }}/source-${{ env.commitS }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push to master
+        uses: gradle/gradle-build-action@v2
+      - name: Build Release With Gradle
         if: ${{ env.commit }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          rm -rf Apk_Build_${{ matrix.repoName }}
-          sed -i '/url =/d' ./.git/config
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git pull --rebase
-          sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
-          git add --all
-          git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
-          git push -u -f origin main
-  manual: 
-    runs-on: ubuntu-latest
-    if: "github.event_name == 'workflow_dispatch'"
-    steps:
-      - run: |
-          echo ${{github.event.pull_request.body}}
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Env
-        uses: actions/setup-node@v3
-        with: 
-          node-version: 16
-      - name: Install Pkgs
-        run: npm ci
-      - name: Get Version
-        run: node -p -e '`VERSION=${require("./package.json").version}`' >> $GITHUB_ENV
-      - name: Build
-        working-directory: Apk_Build_${{ matrix.repoName }}
-        run: | 
           cd ./android
-          ./gradlew assembleRelease
+          chmod +x gradlew
+          ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          rm -rf apk/
-          mkdir -p apk/
+          i=1
           for file in `find ~ -name "*.apk" -print`; do
-            echo "file name is $file"
-            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_Release.apk
+            echo "i = $i, file name is $file"
+            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_$i_Release.apk
+            i=$((i + 1))
           done
       - name: Release Note
         if: ${{ env.commit }}
-        working-directory: Apk_Build_${{ matrix.repoName }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
@@ -168,22 +131,23 @@ jobs:
         with:
           name: ${{ env.tag }}
           tag_name: ${{ matrix.userName }}_${{ matrix.repoName }}_${{ env.tag }}
-          body_path: Apk_Build_${{ matrix.repoName }}/apk/${{ matrix.userName }}-Release.log
+          body_path: Build_${{ matrix.repoName }}_${{ matrix.branchName }}/apk/${{ matrix.userName }}-Release.log
           files: |
-            Apk_Build_${{ matrix.repoName }}/apk/*
-            Apk_Build_${{ matrix.repoName }}/source-${{ env.commitS }}.zip
+            Build_${{ matrix.repoName }}_${{ matrix.branchName }}/apk/*
+            Build_${{ matrix.repoName }}_${{ matrix.branchName }}/source-${{ env.commitS }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to master
         if: ${{ env.commit }}
         run: |
-          rm -rf Apk_Build_${{ matrix.repoName }}
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git status
           git pull --rebase
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
+          rm -rf Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git add --all
           git commit -m "${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_${{ env.commit }}"
           git push -u -f origin main

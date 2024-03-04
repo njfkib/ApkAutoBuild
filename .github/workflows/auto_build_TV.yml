@@ -1,8 +1,8 @@
-name: Legado Auto Build
+name: Auto Build
 
 on:
   schedule:
-    - cron: 0 3 * * *
+    - cron: 0 6 * * *
   push:
     branches:
       - main
@@ -16,9 +16,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: gedoor
-            repoName: legado
-            branchName: master
+          - userName: q215613905
+            repoName: TVBoxOS
+            branchName: main
+          - userName: takagen99
+            repoName: Box
+            branchName: main
+          - userName: XiaoRanLiu3119
+            repoName: TVBoxOS-Mobile
+            branchName: main
+          - userName: FongMi
+            repoName: TV
+            branchName: release
+          - userName: FongMi
+            repoName: TV
+            branchName: fongmi
+          - userName: FongMi
+            repoName: TV
+            branchName: release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,19 +67,16 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          cp -f ${{ github.workspace }}/.github/workflows/legado.jks app/legado.jks
-          sed -i '$a\RELEASE_STORE_FILE=./legado.jks'     ./gradle.properties
-          sed -i '$a\RELEASE_KEY_ALIAS=legado'            ./gradle.properties
-          sed -i '$a\RELEASE_STORE_PASSWORD=gedoor_legado'       ./gradle.properties
-          sed -i '$a\RELEASE_KEY_PASSWORD=gedoor_legado'         ./gradle.properties
-      - name: Customization
-        if: ${{ env.commit && (matrix.repoName == 'legado') }}
-        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
-        run: |
-          echo "统一版本号"
-          sed "/def version/c def version = \"${{ env.tag }}\"" app/build.gradle  -i
-          echo "清空18PlusList.txt"
-          echo "" > app/src/main/assets/18PlusList.txt
+          signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
+          signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
+          signingConfigs="$(echo "$signingConfigs" |base64 -d )"
+          signingConfig="$(echo "$signingConfig" |base64 -d )"
+          sed -i -e "/defaultConfig {/i\\$signingConfigs " -e "/releaseCommon {/a\\$signingConfig " -e "/debug {/a\\$signingConfig " -e "/release {/a\\$signingConfig " app/build.gradle
+          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
+          sed -i '$a\RELEASE_STORE_FILE=./TVBoxOSC.jks'     ./gradle.properties
+          sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
+          sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
+          sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
       - name: Draft Release Note
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -88,7 +100,7 @@ jobs:
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleAppRelease --build-cache --parallel --daemon --warning-mode all
+          ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -131,7 +143,9 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git status
+          git stash
           git pull --rebase
+          git stash pop
           sed -i "/${{ matrix.userName }}\/${{ matrix.repoName }}/s#Updated: [a-zA-Z0-9]*#Updated: ${{ env.commit }}#" README.md
           rm -rf Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git add --all

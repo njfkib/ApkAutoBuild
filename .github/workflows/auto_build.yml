@@ -117,7 +117,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all
-          releaseAPk=`find app/build/outputs/apk/release -name "*.apk" -print`
+          releaseAPk=`find ~ -name "*.apk" -print`
           mv "$releaseAPk" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_release.apk
       - name: Build Common With Gradle
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}

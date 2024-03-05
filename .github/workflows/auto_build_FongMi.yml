@@ -48,17 +48,26 @@ jobs:
           cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
-      - name: Checkout Media Library
-        if: ${{ env.commit && !(matrix.branchName == 'release') }}
-        run: |
-          git clone --depth 8 https://github.com/androidx/media.git
-          mv media Build_${{ matrix.repoName }}_${{ matrix.branchName }}/
+
       - name: Compress Source Code
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
 
+      - name: Checkout Media Library
+        if: ${{ env.commit && !(matrix.branchName == 'release') }}
+        run: |
+          git clone --depth 8 https://github.com/androidx/media.git
+          echo "current file: "
+          ls
+          cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}/
+          sed -i 's#apply from: file("/media/core_settings.gradle")#apply from: file("./media/core_settings.gradle")#' settings.gradle
+          mv ../media .
+          echo "after mv current file: "
+          ls
+          echo "after mv current media: "
+          ls media
       - name: Release Apk Sign
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}

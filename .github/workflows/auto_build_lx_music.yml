@@ -19,6 +19,9 @@ jobs:
           - userName: lyswhut
             repoName: lx-music-mobile
             branchName: master
+          - userName: lyswhut
+            repoName: lx-music-mobile
+            branchName: beta
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,7 +84,8 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks android/app/TVBoxOSC.jks
+          cd android
+          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
           touch keystore.properties
           sed -i '$a\storeFile=./TVBoxOSC.jks'      ./keystore.properties
           sed -i '$a\storePassword=TVBoxOSC'        ./keystore.properties

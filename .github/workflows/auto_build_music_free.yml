@@ -66,7 +66,8 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks android/app/TVBoxOSC.jks
+          cd android
+          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
           touch keystore.properties
           sed -i '$a\RELEASE_STORE_FILE=./TVBoxOSC.jks'     ./keystore.properties
           sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./keystore.properties

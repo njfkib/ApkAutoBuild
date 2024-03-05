@@ -55,19 +55,11 @@ jobs:
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
 
-      - name: Checkout Media Library
+      - name: Apply Media Library patch
         if: ${{ env.commit && !(matrix.branchName == 'release') }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          git clone -b 1.2.1 https://github.com/androidx/media.git
-          echo "current file: "
-          ls
-          cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}/
-          sed -i 's#apply from: file("/media/core_settings.gradle")#apply from: file("./media/core_settings.gradle")#' settings.gradle
-          mv ../media .
-          echo "after mv current file: "
-          ls
-          echo "after mv current media: "
-          ls media
+          git apply ../fongmi.patch
       - name: Release Apk Sign
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}

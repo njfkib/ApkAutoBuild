@@ -68,10 +68,10 @@ jobs:
         run: |
           cd android
           touch keystore.properties
-          sed -i '$a\RELEASE_STORE_FILE=debug.keystore'     ./keystore.properties
-          sed -i '$a\RELEASE_KEY_ALIAS=androiddebugkey'            ./keystore.properties
-          sed -i '$a\RELEASE_STORE_PASSWORD=android'       ./keystore.properties
-          sed -i '$a\RELEASE_KEY_PASSWORD=android'         ./keystore.properties
+          echo 'RELEASE_STORE_FILE=debug.keystore'   >> ./keystore.properties
+          echo 'RELEASE_KEY_ALIAS=androiddebugkey'   >> ./keystore.properties
+          echo 'RELEASE_STORE_PASSWORD=android'      >> ./keystore.properties
+          echo 'RELEASE_KEY_PASSWORD=android'        >> ./keystore.properties
           cat keystore.properties
       - name: Draft Release Note
         if: ${{ env.commit }}

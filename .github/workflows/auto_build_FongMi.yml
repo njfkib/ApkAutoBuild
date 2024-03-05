@@ -1,8 +1,8 @@
-name: TV Auto Build
+name: FongMi Auto Build
 
 on:
   schedule:
-    - cron: 0 6 * * *
+    - cron: 0 5 * * *
   push:
     branches:
       - main
@@ -16,18 +16,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: q215613905
-            repoName: TVBoxOS
-            branchName: main
-          - userName: takagen99
-            repoName: Box
-            branchName: main
-          - userName: XiaoRanLiu3119
-            repoName: TVBoxOS-Mobile
-            branchName: main
-          - userName: chengxue2020
-            repoName: q215613905-Tbox
-            branchName: main
+          - userName: FongMi
+            repoName: TV
+            branchName: release
+          - userName: FongMi
+            repoName: TV
+            branchName: fongmi
+          - userName: FongMi
+            repoName: TV
+            branchName: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,6 +48,11 @@ jobs:
           cd Build_${{ matrix.repoName }}_${{ matrix.branchName }}
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
+      - name: Checkout Media Library
+        if: ${{ env.commit && !(matrix.branchName == 'release') }}
+        run: |
+          git clone --depth 1 https://github.com/androidx/media.git
+          mv media Build_${{ matrix.repoName }}_${{ matrix.branchName }}/
       - name: Compress Source Code
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -102,7 +104,7 @@ jobs:
           i=1
           for file in `find ~ -name "*.apk" -print`; do
             echo "i = $i, file name is $file"
-            mv "$file" apk/${{ matrix.repoName }}_${{ matrix.userName }}_${{ env.tag }}_$i_Release.apk
+            mv "$file" apk/${{ env.tag }}_$file
             i=$((i + 1))
           done
       - name: Release Note

@@ -85,12 +85,12 @@ jobs:
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           cd android
-          cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
           touch keystore.properties
-          sed -i '$a\storeFile=./TVBoxOSC.jks'      ./keystore.properties
-          sed -i '$a\storePassword=TVBoxOSC'        ./keystore.properties
-          sed -i '$a\keyAlias=TVBoxOSC'             ./keystore.properties
-          sed -i '$a\keyPassword=TVBoxOSC'          ./keystore.properties
+          sed -i '$a\storeFile=debug.keystore'      ./keystore.properties
+          sed -i '$a\storePassword=android'        ./keystore.properties
+          sed -i '$a\keyAlias=androiddebugkey'             ./keystore.properties
+          sed -i '$a\keyPassword=android'          ./keystore.properties
+          cat keystore.properties
       - name: Draft Release Note
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -113,6 +113,7 @@ jobs:
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
+          find . -name "keystore.properties" -print
           cd ./android
           chmod +x gradlew
           ./gradlew assembleRelease

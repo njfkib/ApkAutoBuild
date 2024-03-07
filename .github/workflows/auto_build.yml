@@ -97,6 +97,12 @@ jobs:
           fi
           echo "Draft Release Note is \n$releaseNote"
           echo $releaseNote > apk/${{ matrix.userName }}-Release.log
+      - name: Set up JDK 17
+        if: ${{ env.commit }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
       - name: Setup Gradle
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2

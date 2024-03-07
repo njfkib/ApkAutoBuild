@@ -1,10 +1,10 @@
 {
-  "versionCode": $newVersionCode,
+  "versionCode": $newVersionCode$newVersionCode,
   "versionName": "0.0.0",
   "desc": "TVBox_takagen99",
   "forcedUpgrade": false,
   "buildRepoName": "muxd93/ApkAutoBuild",
   "repoUserName": "muxd93",
   "repoName": "TVBox_takagen99",
-  "repoTag": "20240304-1418"
+  "repoTag": "20240308-0017"
 }

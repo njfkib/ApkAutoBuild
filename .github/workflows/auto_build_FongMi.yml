@@ -5,7 +5,7 @@ on:
     - cron: 0 5 * * *
   push:
     branches:
-      - main
+      - release
   pull_request:
   workflow_dispatch:
 
@@ -59,7 +59,7 @@ jobs:
         if: ${{ env.commit && !(matrix.branchName == 'release') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
-          git apply ../fongmi.patch
+          git apply ../fongmi_${{ matrix.branchName }}.patch
       - name: Release Apk Sign
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -105,7 +105,7 @@ jobs:
           i=1
           for file in `find ~ -name "*.apk" -print`; do
             echo "i = $i, file name is $file"
-            mv "$file" apk/${{ env.tag }}_$file
+            mv "$file" apk/
             i=$((i + 1))
           done
       - name: Release Note

@@ -5,7 +5,7 @@ on:
     - cron: 0 4 * * *
   push:
     branches:
-      - main
+      - master
   pull_request:
   workflow_dispatch:
 
@@ -19,9 +19,6 @@ jobs:
           - userName: maotoumao
             repoName: MusicFree
             branchName: master
-          - userName: maotoumao
-            repoName: MusicFree
-            branchName: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4

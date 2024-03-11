@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/auto_build.yml'
   pull_request:
   workflow_dispatch:
 
@@ -22,7 +24,9 @@ jobs:
           - userName: muxd93
             repoName: TVBox_takagen99
             branchName: main
-
+          - userName: lizongying
+            repoName: my-tv
+            branchName: main
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,9 +78,9 @@ jobs:
           newVersionCode=$((versionCode + 1))
           echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV
           echo "newVersionCode is ${{ env.newVersionCode }}"
-          echo "lastVersionCode is $versionCode and newVersionCode is $newVersionCode "
-          sed -i "s#versionCode [0-9]*#versionCode $newVersionCode#" app/build.gradle
-          sed -i 's#"versionCode": [0-9]*#"versionCode": $newVersionCode#g' ${{ github.workspace }}/tk_version.json
+          echo "lastVersionCode is $versionCode and newVersionCode is ${{ newVersionCode }} "
+          sed -i "s#versionCode [0-9]*#versionCode ${{ newVersionCode }}#" app/build.gradle
+          sed -i 's#"versionCode": [0-9]*#"versionCode": ${{ newVersionCode }}#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json
@@ -88,6 +92,7 @@ jobs:
         run: |
           rm -rf apk/
           mkdir -p apk/
+          echo "newVersionCode is ${{ env.newVersionCode }}"
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}\/${{ matrix.branchName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
           if [ "${{ env.commit }}" == "${lastCommit}" ]; then
@@ -107,7 +112,7 @@ jobs:
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
-        if: ${{ env.commit }}
+        if: ${{ env.commit && !(matrix.repoName == 'my-tv') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           chmod +x gradlew
@@ -118,6 +123,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
+      - name: Run build with Gradle wrapper
+        if: ${{ env.commit && (matrix.repoName == 'my-tv') }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+        run: ./gradlew assembleRelease -PIS_SO_BUILD=false
       - name: Prepare App For TVBox_takagen99
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -168,6 +177,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git status
+          git diff
           git stash
           git pull --rebase
           git stash pop

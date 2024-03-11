@@ -5,7 +5,9 @@ on:
     - cron: 0 4 * * *
   push:
     branches:
-      - master
+      - main
+    paths:
+      - .github/workflows/auto_build_music_free.yml'
   pull_request:
   workflow_dispatch:
 

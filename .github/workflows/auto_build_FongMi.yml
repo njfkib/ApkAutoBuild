@@ -5,7 +5,9 @@ on:
     - cron: 0 5 * * *
   push:
     branches:
-      - release
+      - main
+    paths:
+      - .github/workflows/auto_build_FongMi.yml'
   pull_request:
   workflow_dispatch:
 

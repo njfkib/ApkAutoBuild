@@ -1,4 +1,4 @@
-name: XD Auto Build
+name: MyTV Auto Build
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/auto_build.yml'
+      - .github/workflows/auto_build_myTV.yml'
   pull_request:
   workflow_dispatch:
 
@@ -18,11 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: muxd93
-            repoName: TVBoxOS_XD
-            branchName: main
-          - userName: muxd93
-            repoName: TVBox_takagen99
+          - userName: lizongying
+            repoName: my-tv
             branchName: main
     steps:
       - name: Checkout
@@ -74,9 +71,10 @@ jobs:
           versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
           newVersionCode=$((versionCode + 1))
           echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV
-          echo "lastVersionCode is $versionCode and newVersionCode is $newVersionCode"
-          sed -i "s#versionCode [0-9]*#versionCode $newVersionCode#" app/build.gradle
-          sed -i "s#\"versionCode\": [0-9]*#\"versionCode\": $newVersionCode#g" ${{ github.workspace }}/tk_version.json
+          echo "newVersionCode is ${{ env.newVersionCode }}"
+          echo "lastVersionCode is $versionCode and newVersionCode is ${{ newVersionCode }} "
+          sed -i "s#versionCode [0-9]*#versionCode ${{ newVersionCode }}#" app/build.gradle
+          sed -i 's#"versionCode": [0-9]*#"versionCode": ${{ newVersionCode }}#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json
@@ -108,7 +106,7 @@ jobs:
         if: ${{ env.commit }}
         uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
-        if: ${{ env.commit }}
+        if: ${{ env.commit && !(matrix.repoName == 'my-tv') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           chmod +x gradlew
@@ -119,6 +117,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleReleaseCommon --build-cache --parallel --daemon --warning-mode all
+      - name: Run build with Gradle wrapper
+        if: ${{ env.commit && (matrix.repoName == 'my-tv') }}
+        working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
+        run: ./gradlew assembleRelease -PIS_SO_BUILD=false
       - name: Prepare App For TVBox_takagen99
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}

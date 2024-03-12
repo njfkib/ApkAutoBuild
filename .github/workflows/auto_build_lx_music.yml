@@ -21,7 +21,9 @@ jobs:
           - userName: lyswhut
             repoName: lx-music-mobile
             branchName: master
-
+          - userName: lyswhut
+            repoName: lx-music-mobile
+            branchName: beta
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,17 +53,21 @@ jobs:
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      
+      - name: Setup Gradle
+        if: ${{ env.commit }}
+        uses: gradle/gradle-build-action@v2
+
       - name: Setup Java Env
         uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
           java-version: '17'
           cache: gradle
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
       
       - name: Cache node modules
         id: cache-npm
@@ -106,9 +112,6 @@ jobs:
           fi
           echo "Draft Release Note is \n$releaseNote"
           echo $releaseNote > apk/${{ matrix.userName }}-Release.log
-      - name: Setup Gradle
-        if: ${{ env.commit }}
-        uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}

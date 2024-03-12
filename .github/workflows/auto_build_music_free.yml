@@ -21,6 +21,9 @@ jobs:
           - userName: maotoumao
             repoName: MusicFree
             branchName: master
+          - userName: maotoumao
+            repoName: MusicFree
+            branchName: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,6 +56,9 @@ jobs:
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
           zip -q -x ".git/*" -r source-${{ env.commitS }}.zip .
+      - name: Setup Gradle
+        if: ${{ env.commit }}
+        uses: gradle/gradle-build-action@v2
       - name: Install Pkgs
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
@@ -87,9 +93,6 @@ jobs:
           fi
           echo "Draft Release Note is \n$releaseNote"
           echo $releaseNote > apk/${{ matrix.userName }}-Release.log
-      - name: Setup Gradle
-        if: ${{ env.commit }}
-        uses: gradle/gradle-build-action@v2
       - name: Build Release With Gradle
         if: ${{ env.commit }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}

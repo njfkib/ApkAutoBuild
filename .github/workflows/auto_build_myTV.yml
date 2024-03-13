@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/auto_build_myTV.yml'
+      - '.github/workflows/auto_build_myTV.yml'
   pull_request:
   workflow_dispatch:
 
@@ -71,10 +71,9 @@ jobs:
           versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
           newVersionCode=$((versionCode + 1))
           echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV
-          echo "newVersionCode is ${{ env.newVersionCode }}"
-          echo "lastVersionCode is $versionCode and newVersionCode is ${{ newVersionCode }} "
-          sed -i "s#versionCode [0-9]*#versionCode ${{ newVersionCode }}#" app/build.gradle
-          sed -i 's#"versionCode": [0-9]*#"versionCode": ${{ newVersionCode }}#g' ${{ github.workspace }}/tk_version.json
+          echo "lastVersionCode is $versionCode and newVersionCode is $newVersionCode"
+          sed -i "s#versionCode [0-9]*#versionCode $newVersionCode#" app/build.gradle
+          sed -i "s#\"versionCode\": [0-9]*#\"versionCode\": $newVersionCode#g" ${{ github.workspace }}/tk_version.json
           sed -i 's#"buildRepoName": "[^"]*"#"buildRepoName": "${{ github.repository }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json

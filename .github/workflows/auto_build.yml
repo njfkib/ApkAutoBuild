@@ -71,6 +71,8 @@ jobs:
         if: ${{ env.commit && (matrix.repoName == 'TVBox_takagen99') }}
         working-directory: Build_${{ matrix.repoName }}_${{ matrix.branchName }}
         run: |
+          sed -i "s#licensekey*#${{ secrets.ALIVC_KEY }}#" app/build.gradle
+          echo ${{ secrets.LICENSE_CRT }} > app/src/main/assets/license.crt
           versionCode=$(grep -o '"versionCode": [0-9]*' ${{ github.workspace }}/tk_version.json | awk '{print $2}')
           newVersionCode=$((versionCode + 1))
           echo "newVersionCode=$newVersionCode" >> $GITHUB_ENV

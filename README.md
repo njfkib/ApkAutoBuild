@@ -13,7 +13,7 @@ This repo relies on the following third-party projects:
 - [muxd93/TVBoxOS_XD/main](https://github.com/muxd93/TVBoxOS_XD) (Updated: 0a96822ab394733567ce052ab3a81802027ece43)
 - [muxd93/TVBox_takagen99/main](https://github.com/muxd93/TVBox_takagen99) (Updated: bf8fb19fedda2c2423e9eed1ec3b23d1256b4ed3)
 - [XiaoRanLiu3119/TVBoxOS-Mobile/main](https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile) (Updated: 60a5ea045f29d724a85271b1f6fd058cf80b8589)
-- [gedoor/legado/master](https://github.com/gedoor/legado) (Updated: 005839257fb4704a8b0d8596bb5e6289d3ae44cf)
+- [gedoor/legado/master](https://github.com/gedoor/legado) (Updated: bfe435aec5d3688c2ce65daf64d8f28d1aef83a5)
 - [chengxue2020/q215613905-Tbox/main](https://github.com/chengxue2020/q215613905-Tbox) (Updated: 285ddfde23621f050729c09735ba641c0d03a42f)
 - [maotoumao/MusicFree/master](https://github.com/maotoumao/MusicFree) (Updated: 19e015ad6f00594e5c8419db3c427552843bfdd4)
 - [maotoumao/MusicFree/dev](https://github.com/maotoumao/MusicFree) (Updated: 95b36719cfc103e9b528409ff362c507d361ada2)

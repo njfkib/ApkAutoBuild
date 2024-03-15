@@ -21,4 +21,4 @@ This repo relies on the following third-party projects:
 - [lyswhut/lx-music-mobile/beta](https://github.com/lyswhut/lx-music-mobile) (Updated: cb735494f485aea01a11f805731faf61e144e67b)
 - [FongMi/TV/release](https://github.com/FongMi/TV) (Updated: edd0e7ebbed405cb63bca7d6aa96f1e2e551d3a3)
 - [FongMi/TV/fongmi](https://github.com/FongMi/TV) (Updated: 2ea7012d177110e37ff87456efc42b66dd3408a9)
-- [FongMi/TV/dev](https://github.com/FongMi/TV) (Updated: d69a7ebd72f87442bfb81ce40c8f854d28f9a36c)
+- [FongMi/TV/dev](https://github.com/FongMi/TV) (Updated: 47974697739df0a654426bc3444e696729348640)

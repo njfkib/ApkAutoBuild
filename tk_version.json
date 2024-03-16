@@ -1,10 +1,11 @@
 {
-  "versionCode": 6,
+  "versionCode": 1,
   "versionName": "0.0.0",
   "desc": "TVBox_takagen99",
   "forcedUpgrade": false,
   "buildRepoName": "muxd93/ApkAutoBuild",
   "repoUserName": "muxd93",
   "repoName": "TVBox_takagen99",
+  "repoBranch": "main",
   "repoTag": "20240316-0003"
 }

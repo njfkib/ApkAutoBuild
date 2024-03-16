@@ -83,6 +83,7 @@ jobs:
           sed -i 's#"repoUserName": "[^"]*"#"repoUserName": "${{ matrix.userName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoName": "[^"]*"#"repoName": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"repoTag": "[^"]*"#"repoTag": "${{ env.tag }}"#g' ${{ github.workspace }}/tk_version.json
+          sed -i 's#"repoBranch": "[^"]*"#"repoBranch": "${{ matrix.branchName }}"#g' ${{ github.workspace }}/tk_version.json
           sed -i 's#"desc": "[^"]*"#"desc": "${{ matrix.repoName }}"#g' ${{ github.workspace }}/tk_version.json
       - name: Draft Release Note
         if: ${{ env.commit }}

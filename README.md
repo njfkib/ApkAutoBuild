@@ -16,7 +16,7 @@ This repo relies on the following third-party projects:
 - [gedoor/legado/master](https://github.com/gedoor/legado) (Updated: 9f599a84c223edcb1de82ca9c893dbcaaf123a9b)
 - [chengxue2020/q215613905-Tbox/main](https://github.com/chengxue2020/q215613905-Tbox) (Updated: 285ddfde23621f050729c09735ba641c0d03a42f)
 - [maotoumao/MusicFree/master](https://github.com/maotoumao/MusicFree) (Updated: 19e015ad6f00594e5c8419db3c427552843bfdd4)
-- [maotoumao/MusicFree/dev](https://github.com/maotoumao/MusicFree) (Updated: 95b36719cfc103e9b528409ff362c507d361ada2)
+- [maotoumao/MusicFree/dev](https://github.com/maotoumao/MusicFree) (Updated: 758f02c2506df5a89a2eb91844e32c530d66cc73)
 - [lyswhut/lx-music-mobile/master](https://github.com/lyswhut/lx-music-mobile) (Updated: c8d14513f2424ad3ea67d463b8ef49a2f83e4c1a)
 - [lyswhut/lx-music-mobile/beta](https://github.com/lyswhut/lx-music-mobile) (Updated: cb735494f485aea01a11f805731faf61e144e67b)
 - [FongMi/TV/release](https://github.com/FongMi/TV) (Updated: 6527b351d095be3a5cb2e746c338f6264992340c)

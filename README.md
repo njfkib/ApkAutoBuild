@@ -19,6 +19,6 @@ This repo relies on the following third-party projects:
 - [maotoumao/MusicFree/dev](https://github.com/maotoumao/MusicFree) (Updated: 8c07b5ca0f698e1345798c1c006a0675860d1897)
 - [lyswhut/lx-music-mobile/master](https://github.com/lyswhut/lx-music-mobile) (Updated: c8d14513f2424ad3ea67d463b8ef49a2f83e4c1a)
 - [lyswhut/lx-music-mobile/beta](https://github.com/lyswhut/lx-music-mobile) (Updated: 2b6c62049f5def90e71833deeb417711c10a4efc)
-- [FongMi/TV/release](https://github.com/FongMi/TV) (Updated: 0705d25f024ac318540f658a2977b7386df9f5bb)
+- [FongMi/TV/release](https://github.com/FongMi/TV) (Updated: a1b27d9fcaea6106e4df469ad2c9efc6d4bc019f)
 - [FongMi/TV/fongmi](https://github.com/FongMi/TV) (Updated: 2ea7012d177110e37ff87456efc42b66dd3408a9)
 - [FongMi/TV/dev](https://github.com/FongMi/TV) (Updated: 16fcb13e011dda4e88291d0e254efd2b314384c0)

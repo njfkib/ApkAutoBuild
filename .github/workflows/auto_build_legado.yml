@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: gedoor
-            repoName: legado
+          - userName: svengong
+            repoName: xcubebase
             branchName: master
     steps:
       - name: Checkout
